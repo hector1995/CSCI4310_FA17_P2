@@ -11,11 +11,11 @@ public abstract class Layer extends Thread {
 	private Layer layerLower;
 	private ArrayList<PacketData> recvBuffer, sendBuffer;
 	private enum From {
-		lower, upper;
+		sendBuffer, recvBuffer;
 	}
 	//-- Public methods
 	public PacketData getPacket(From from) {
-		ArrayList<PacketData> buffer = (from == From.lower) ? this.recvBuffer : this.sendBuffer;
+		ArrayList<PacketData> buffer = (from == From.recvBuffer) ? this.recvBuffer : this.sendBuffer;
 		return buffer.size() > 0 ? buffer.remove(0) : null;
 	}
 	public static PacketData encapsulate(PacketData packetData) {
@@ -57,13 +57,13 @@ public abstract class Layer extends Thread {
 				//-- Interrupted  by the lower layer
 				PacketData tempPacket = null;
 				if(this.layerLower != null) {
-					tempPacket = decapsulate(this.layerLower.getPacket(From.lower));
+					tempPacket = decapsulate(this.layerLower.getPacket(From.recvBuffer));
 					if(tempPacket != null) {
 						this.recvBuffer.add(tempPacket);
 					}
 				}
 				if(this.layerUpper != null) {
-					tempPacket = encapsulate(this.layerUpper.getPacket(From.upper));
+					tempPacket = encapsulate(this.layerUpper.getPacket(From.sendBuffer));
 					if(tempPacket != null) {
 						this.sendBuffer.add(tempPacket);
 					}
